@@ -1,0 +1,39 @@
+{
+    "funcionarios": [
+      {
+        "id": 1,
+        "nome": "Maria Oliveira",
+        "cargo": "Repositor",
+        "data_contratacao": "2022-03-10",
+        "turno": "Manhã"
+      },
+      {
+        "id": 2,
+        "nome": "Carlos Pereira",
+        "cargo": "Repositor",
+        "data_contratacao": "2021-08-22",
+        "turno": "Tarde"
+      },
+      {
+        "id": 3,
+        "nome": "Ana Souza",
+        "cargo": "Gerente",
+        "data_contratacao": "2019-11-01",
+        "turno": "Integral"
+      },
+      {
+        "id": 3,
+        "nome": "Lucas Almeida",
+        "cargo": "Repositor",
+        "data_contratacao": "2023-08-22",
+        "turno": "Tarde"
+      },
+      {
+        "id": 4,
+        "nome": "Nicolas Fonseca",
+        "cargo": "Repositor",
+        "data_contratacao": "2020-08-22",
+        "turno": "Tarde"
+      }
+    ]
+  }

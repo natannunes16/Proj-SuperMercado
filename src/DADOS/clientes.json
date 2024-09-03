@@ -1,0 +1,46 @@
+{
+    "clientes": [
+      {
+        "id": 1,
+        "nome": "João Silva",
+        "cpf": "123.456.789-00",
+        "email": "joao.silva@email.com",
+        "telefone": "(11) 91234-5678",
+        "endereco": {
+          "rua": "Rua das Flores",
+          "numero": 123,
+          "cidade": "São Paulo",
+          "estado": "SP",
+          "cep": "01000-000"
+        }
+      },
+      {
+        "id": 2,
+        "nome": "Fernanda Lima",
+        "cpf": "987.654.321-00",
+        "email": "fernanda.lima@email.com",
+        "telefone": "(11) 99876-5432",
+        "endereco": {
+          "rua": "Avenida Central",
+          "numero": 456,
+          "cidade": "São Paulo",
+          "estado": "SP",
+          "cep": "02000-000"
+        }
+      },
+      {
+        "id": 3,
+        "nome": "Lucas Oliveira",
+        "cpf": "456.789.123-00",
+        "email": "lucas.oliveira@email.com",
+        "telefone": "(11) 98765-4321",
+        "endereco": {
+          "rua": "Rua dos Andradas",
+          "numero": 789,
+          "cidade": "São Paulo",
+          "estado": "SP",
+          "cep": "03000-000"
+        }
+      }
+    ]
+  }
