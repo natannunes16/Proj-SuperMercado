@@ -2,23 +2,22 @@ const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
-// Registro de usuário
 exports.registerUser = async (req, res) => {
-    const { nome, email, senha } = req.body;  // Atualizado para 'email' em vez de 'cpf'
+    const { nome, email, senha, cpf } = req.body;  // Incluído o campo 'cpf'
 
     try {
-        // Verifica se o usuário já está registrado pelo e-mail
-        const userExists = await User.findOne({ email });
+        // Verifica se o usuário já está registrado pelo e-mail ou cpf
+        const userExists = await User.findOne({ $or: [{ email }, { cpf }] });
         if (userExists) {
-            return res.status(400).json({ message: 'E-mail já cadastrado.' });
+            return res.status(400).json({ message: 'E-mail ou CPF já cadastrado.' });
         }
 
         // Criptografa a senha antes de salvar o usuário
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(senha, salt);
 
-        // Cria um novo usuário com a senha criptografada
-        const newUser = new User({ nome, email, senha: hashedPassword });
+        // Cria um novo usuário com a senha criptografada e o cpf
+        const newUser = new User({ nome, email, senha: hashedPassword, cpf });
         await newUser.save();
 
         res.status(201).json({ message: 'Usuário registrado com sucesso.' });
@@ -30,7 +29,7 @@ exports.registerUser = async (req, res) => {
 
 // Login de usuário
 exports.loginUser = async (req, res) => {
-    const { email, senha } = req.body;  // Atualizado para 'email'
+    const { email, senha } = req.body;
 
     try {
         // Verifica se o usuário existe
