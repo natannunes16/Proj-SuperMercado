@@ -1,12 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
-const employeeRoutes = require('./src/routes/employeeRoutes');
+
+// Importar rotas
+const userRoutes = require('./src/routes/userRoutes');
 const productRoutes = require('./src/routes/productRoutes');
 const promotionRoutes = require('./src/routes/promotionRoutes');
-const authRoutes = require('./src/routes/authRoutes');
-const userRoutes = require('./src/routes/userRoutes')
-require('dotenv').config(); 
 
 const app = express();
 
@@ -14,17 +14,21 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// Rotas
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/employees', employeeRoutes);
-app.use('/api/promotions', promotionRoutes);
-app.get('/api/protected', authMiddleware, (req, res) => {
-  res.send('Esta é uma rota protegida');
-});
-mongoose.connect('mongodb://localhost:27017/Supermarket', { useNewUrlParser: true, useUnifiedTopology: true });
+// Conectar ao MongoDB
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+  .then(() => console.log('Conectado ao MongoDB'))
+  .catch((error) => console.log('Erro ao conectar ao MongoDB:', error));
 
-app.listen(3000, () => {
-  console.log('Servidor rodando na porta 3000');
+// Rotas
+app.use('/api/usuarios', userRoutes);
+app.use('/api/produtos', productRoutes);
+app.use('/api/promocoes', promotionRoutes);
+
+// Iniciar o servidor
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
 });
