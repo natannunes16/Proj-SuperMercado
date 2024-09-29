@@ -1,43 +1,20 @@
-const Promotion = require('../models/Promotion');
+router.get('/promocoes-personalizadas', authMiddleware, async (req, res) => {
+  const clienteId = req.user.id;
 
-const createPromotion = async (req, res) => {
-  try {
-    const promotion = new Promotion(req.body);
-    await promotion.save();
-    res.status(201).json(promotion);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
+  // Buscar histórico de compras
+  const compras = await Compra.find({ cliente: clienteId }).populate('produto');
 
-const getPromotion = async (req, res) => {
-  try {
-    const promotion = await Promotion.findById(req.params.id).populate('produto_id');
-    if (!promotion) return res.status(404).json({ message: 'Promoção não encontrada' });
-    res.json(promotion);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  // Lógica para recomendar promoções com base nas compras anteriores
+  const categoriasFrequentes = compras.reduce((acc, compra) => {
+    const categoria = compra.produto.tipo;
+    acc[categoria] = (acc[categoria] || 0) + 1;
+    return acc;
+  }, {});
 
-const updatePromotion = async (req, res) => {
-  try {
-    const promotion = await Promotion.findByIdAndUpdate(req.params.id, req.body, { new: true });
-    if (!promotion) return res.status(404).json({ message: 'Promoção não encontrada' });
-    res.json(promotion);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  const categoriaPreferida = Object.keys(categoriasFrequentes).reduce((a, b) => categoriasFrequentes[a] > categoriasFrequentes[b] ? a : b);
 
-const deletePromotion = async (req, res) => {
-  try {
-    const promotion = await Promotion.findByIdAndDelete(req.params.id);
-    if (!promotion) return res.status(404).json({ message: 'Promoção não encontrada' });
-    res.json({ message: 'Promoção removida' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  const promocoes = await Promocao.find().populate('produto');
+  const promocoesRelevantes = promocoes.filter(promocao => promocao.produto.tipo === categoriaPreferida);
 
-module.exports = { createPromotion, getPromotion, updatePromotion, deletePromotion };
+  res.json(promocoesRelevantes);
+});
