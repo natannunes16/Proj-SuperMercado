@@ -1,24 +1,12 @@
 const express = require('express');
-const userController = require('../controllers/userController'); // Importa o controller
+const userController = require('../controllers/userController.js');
 const router = express.Router();
 
-// Rotas públicas
-router.post('/register', userController.registerUser);  // Rota de registro de usuário
-router.post('/login', userController.loginUser);        // Rota de login de usuário
-router.post('/logout', userController.logoutUser);      // Rota de logout de usuário
-
-// Rotas protegidas (exemplo de rota que requer autenticação)
-router.get('/perfil', userController.authMiddleware, async (req, res) => {
-    try {
-        const user = await User.findById(req.userId).select('-senha'); // Retorna os dados do usuário exceto a senha
-        if (!user) {
-            return res.status(404).json({ message: 'Usuário não encontrado.' });
-        }
-        res.status(200).json(user);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Erro ao carregar perfil.' });
-    }
-});
+router.post('/register', userController.registerUser);
+router.post('/login', userController.loginUser); // Adicione esta linha
+router.get('/', userController.getAllUsers);
+router.get('/:id', userController.getUserById);
+router.put('/:id', userController.updateUser);
+router.delete('/:id', userController.deleteUser);
 
 module.exports = router;

@@ -1,16 +1,4 @@
 const express = require('express');
-const { createPromotion, getPromotion, updatePromotion, deletePromotion } = require('../controllers/promotionController');
-const { verifyToken } = require('../middlewares/authMiddleware');
-
-const router = express.Router();
-
-router.post('/', verifyToken, createPromotion);
-router.get('/:id', verifyToken, getPromotion);
-router.put('/:id', verifyToken, updatePromotion);
-router.delete('/:id', verifyToken, deletePromotion);
-
-module.exports = router;
-const express = require('express');
 const Promocao = require('../models/Promotion');
 const Produto = require('../models/Product');
 const authMiddleware = require('../middlewares/auth');

@@ -1,21 +1,26 @@
 const express = require('express');
-const Produto = require('../models/Product');
-const authMiddleware = require('../middlewares/auth');
 const router = express.Router();
+const Produto = require('../models/Product');
 
-router.post('/produtos', authMiddleware, async (req, res) => {
+// Rota para adicionar um produto
+router.post('/', async (req, res) => {
   try {
     const produto = new Produto(req.body);
     await produto.save();
     res.status(201).json(produto);
   } catch (error) {
-    res.status(400).json({ message: 'Erro ao cadastrar produto' });
+    res.status(400).json({ message: 'Erro ao adicionar produto', error });
   }
 });
 
-router.get('/produtos', authMiddleware, async (req, res) => {
-  const produtos = await Produto.find();
-  res.json(produtos);
+// Rota para listar todos os produtos
+router.get('/', async (req, res) => {
+  try {
+    const produtos = await Produto.find();
+    res.json(produtos);
+  } catch (error) {
+    res.status(500).json({ message: 'Erro ao buscar produtos', error });
+  }
 });
 
 module.exports = router;
