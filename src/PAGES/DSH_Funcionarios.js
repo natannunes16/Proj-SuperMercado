@@ -1,80 +1,61 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { Modal, Button } from 'react-bootstrap';
-import './Style/DSH_Funcionarios.css'; 
+import axios from 'axios';
+import './Style/DSH_Funcionarios.css'; // Atualize o nome do arquivo CSS se necessário
 
 export const DSH_Funcionarios = () => {
-    const [employees, setEmployees] = useState([
-        {
-            id: 1,
-            nome: "Maria Oliveira",
-            cargo: "Repositor",
-            data_contratacao: "2022-03-10",
-            turno: "Manhã"
-        },
-        {
-            id: 2,
-            nome: "Carlos Pereira",
-            cargo: "Repositor",
-            data_contratacao: "2021-08-22",
-            turno: "Tarde"
-        },
-        {
-            id: 3,
-            nome: "Ana Souza",
-            cargo: "Gerente",
-            data_contratacao: "2019-11-01",
-            turno: "Integral"
-        },
-        {
-            id: 4,
-            nome: "Lucas Almeida",
-            cargo: "Repositor",
-            data_contratacao: "2023-08-22",
-            turno: "Tarde"
-        },
-        {
-            id: 5,
-            nome: "Nicolas Fonseca",
-            cargo: "Repositor",
-            data_contratacao: "2020-08-22",
-            turno: "Tarde"
-        }
-    ]);
-
     const [showEditModal, setShowEditModal] = useState(false);
     const [showRemoveModal, setShowRemoveModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false); 
-    const [selectedEmployee, setSelectedEmployee] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
     const [editData, setEditData] = useState({
         nome: '',
-        cargo: '',
-        data_contratacao: '',
-        turno: ''
+        email: '',
+        senha: '',
+        cpf: ''
     });
 
-    const [newEmployeeData, setNewEmployeeData] = useState({
-        id: '',
+    const [newUserData, setNewUserData] = useState({
         nome: '',
-        cargo: '',
-        data_contratacao: '',
-        turno: ''
+        email: '',
+        senha: '',
+        cpf: ''
     });
 
+    const [users, setUsers] = useState([]);
+    const token = localStorage.getItem('token'); // Supondo que você armazena o token no localStorage
 
-    const handleEdit = (employee) => {
-        setSelectedEmployee(employee);
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
+    const fetchUsers = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/usuarios', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setUsers(response.data);
+        } catch (error) {
+            console.error('Erro ao obter usuários:', error);
+        }
+    };
+
+    const handleEdit = (user) => {
+        setSelectedUser(user);
         setEditData({
-            nome: employee.nome,
-            cargo: employee.cargo,
-            data_contratacao: employee.data_contratacao,
-            turno: employee.turno
+            nome: user.nome,
+            email: user.email,
+            senha: '',
+            cpf: user.cpf
         });
         setShowEditModal(true);
     };
 
-    const handleRemove = (employee) => {
-        setSelectedEmployee(employee);
+    const handleRemove = (user) => {
+        setSelectedUser(user);
         setShowRemoveModal(true);
     };
 
@@ -84,22 +65,21 @@ export const DSH_Funcionarios = () => {
 
     const handleCloseEditModal = () => {
         setShowEditModal(false);
-        setSelectedEmployee(null);
+        setSelectedUser(null);
     };
 
     const handleCloseRemoveModal = () => {
         setShowRemoveModal(false);
-        setSelectedEmployee(null);
+        setSelectedUser(null);
     };
 
     const handleCloseAddModal = () => {
         setShowAddModal(false);
-        setNewEmployeeData({
-            id: '',
+        setNewUserData({
             nome: '',
-            cargo: '',
-            data_contratacao: '',
-            turno: ''
+            email: '',
+            senha: '',
+            cpf: ''
         });
     };
 
@@ -111,36 +91,54 @@ export const DSH_Funcionarios = () => {
         }));
     };
 
-    const handleNewEmployeeChange = (e) => {
+    const handleNewUserChange = (e) => {
         const { id, value } = e.target;
-        setNewEmployeeData((prevData) => ({
+        setNewUserData((prevData) => ({
             ...prevData,
             [id]: value
         }));
     };
 
-    const handleSaveEdit = () => {
-        setEmployees((prevEmployees) =>
-            prevEmployees.map((emp) =>
-                emp.id === selectedEmployee.id ? { ...emp, ...editData } : emp
-            )
-        );
-        handleCloseEditModal();
+    const handleSaveEdit = async () => {
+        try {
+            await axios.put(`http://localhost:3000/api/usuarios/${selectedUser._id}`, editData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            fetchUsers(); // Atualiza a lista de usuários
+            handleCloseEditModal();
+        } catch (error) {
+            console.error('Erro ao atualizar usuário:', error);
+        }
     };
 
-    const handleConfirmRemove = () => {
-        setEmployees((prevEmployees) =>
-            prevEmployees.filter((emp) => emp.id !== selectedEmployee.id)
-        );
-        handleCloseRemoveModal();
+    const handleConfirmRemove = async () => {
+        try {
+            await axios.delete(`http://localhost:3000/api/usuarios/${selectedUser._id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            fetchUsers(); // Atualiza a lista de usuários
+            handleCloseRemoveModal();
+        } catch (error) {
+            console.error('Erro ao remover usuário:', error);
+        }
     };
 
-    const handleSaveNewEmployee = () => {
-        setEmployees((prevEmployees) => [
-            ...prevEmployees,
-            { ...newEmployeeData, id: prevEmployees.length + 1 }
-        ]);
-        handleCloseAddModal();
+    const handleSaveNewUser = async () => {
+        try {
+            await axios.post('http://localhost:3000/api/usuarios/register', newUserData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            fetchUsers(); // Atualiza a lista de usuários
+            handleCloseAddModal();
+        } catch (error) {
+            console.error('Erro ao adicionar usuário:', error);
+        }
     };
 
     return (
@@ -150,24 +148,24 @@ export const DSH_Funcionarios = () => {
                     <Sidebar />
                 </div>
                 <div className="col py-3">
-                    <h1>Funcionários</h1>
+                    <h1>Usuários</h1>
                     <Button variant="primary" onClick={handleAdd} className="mb-3">
-                        Adicionar Funcionário
+                        Adicionar Usuário
                     </Button>
                     <ul className="list-group">
-                        {employees.map((employee) => (
-                            <li key={employee.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                ID: {employee.id} | {employee.nome} | Cargo: {employee.cargo} | Turno: {employee.turno} | Data de Contratação: {employee.data_contratacao}
+                        {users.map((user) => (
+                            <li key={user._id} className="list-group-item d-flex justify-content-between align-items-center">
+                                {user.nome} | Email: {user.email} | CPF: {user.cpf}
                                 <div>
                                     <button
                                         className="btn btn-warning btn-sm me-2"
-                                        onClick={() => handleEdit(employee)}
+                                        onClick={() => handleEdit(user)}
                                     >
                                         Atualizar
                                     </button>
                                     <button
                                         className="btn btn-danger btn-sm"
-                                        onClick={() => handleRemove(employee)}
+                                        onClick={() => handleRemove(user)}
                                     >
                                         Remover
                                     </button>
@@ -179,7 +177,7 @@ export const DSH_Funcionarios = () => {
                     {/* Modal de Edição */}
                     <Modal show={showEditModal} onHide={handleCloseEditModal}>
                         <Modal.Header closeButton>
-                            <Modal.Title>Atualizar Funcionário</Modal.Title>
+                            <Modal.Title>Atualizar Usuário</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             <form>
@@ -194,32 +192,32 @@ export const DSH_Funcionarios = () => {
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="cargo" className="form-label">Cargo</label>
+                                    <label htmlFor="email" className="form-label">Email</label>
                                     <input
-                                        type="text"
+                                        type="email"
                                         className="form-control"
-                                        id="cargo"
-                                        value={editData.cargo}
+                                        id="email"
+                                        value={editData.email}
                                         onChange={handleChange}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="data_contratacao" className="form-label">Data de Contratação</label>
+                                    <label htmlFor="senha" className="form-label">Senha</label>
                                     <input
-                                        type="date"
+                                        type="password"
                                         className="form-control"
-                                        id="data_contratacao"
-                                        value={editData.data_contratacao}
+                                        id="senha"
+                                        value={editData.senha}
                                         onChange={handleChange}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="turno" className="form-label">Turno</label>
+                                    <label htmlFor="cpf" className="form-label">CPF</label>
                                     <input
                                         type="text"
                                         className="form-control"
-                                        id="turno"
-                                        value={editData.turno}
+                                        id="cpf"
+                                        value={editData.cpf}
                                         onChange={handleChange}
                                     />
                                 </div>
@@ -238,7 +236,7 @@ export const DSH_Funcionarios = () => {
                     {/* Modal de Adição */}
                     <Modal show={showAddModal} onHide={handleCloseAddModal}>
                         <Modal.Header closeButton>
-                            <Modal.Title>Adicionar Funcionário</Modal.Title>
+                            <Modal.Title>Adicionar Usuário</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             <form>
@@ -248,38 +246,38 @@ export const DSH_Funcionarios = () => {
                                         type="text"
                                         className="form-control"
                                         id="nome"
-                                        value={newEmployeeData.nome}
-                                        onChange={handleNewEmployeeChange}
+                                        value={newUserData.nome}
+                                        onChange={handleNewUserChange}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="cargo" className="form-label">Cargo</label>
+                                    <label htmlFor="email" className="form-label">Email</label>
+                                    <input
+                                        type="email"
+                                        className="form-control"
+                                        id="email"
+                                        value={newUserData.email}
+                                        onChange={handleNewUserChange}
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <label htmlFor="senha" className="form-label">Senha</label>
+                                    <input
+                                        type="password"
+                                        className="form-control"
+                                        id="senha"
+                                        value={newUserData.senha}
+                                        onChange={handleNewUserChange}
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <label htmlFor="cpf" className="form-label">CPF</label>
                                     <input
                                         type="text"
                                         className="form-control"
-                                        id="cargo"
-                                        value={newEmployeeData.cargo}
-                                        onChange={handleNewEmployeeChange}
-                                    />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="data_contratacao" className="form-label">Data de Contratação</label>
-                                    <input
-                                        type="date"
-                                        className="form-control"
-                                        id="data_contratacao"
-                                        value={newEmployeeData.data_contratacao}
-                                        onChange={handleNewEmployeeChange}
-                                    />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="turno" className="form-label">Turno</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        id="turno"
-                                        value={newEmployeeData.turno}
-                                        onChange={handleNewEmployeeChange}
+                                        id="cpf"
+                                        value={newUserData.cpf}
+                                        onChange={handleNewUserChange}
                                     />
                                 </div>
                             </form>
@@ -288,7 +286,7 @@ export const DSH_Funcionarios = () => {
                             <Button variant="secondary" onClick={handleCloseAddModal}>
                                 Fechar
                             </Button>
-                            <Button variant="primary" onClick={handleSaveNewEmployee}>
+                            <Button variant="primary" onClick={handleSaveNewUser}>
                                 Salvar
                             </Button>
                         </Modal.Footer>
@@ -297,10 +295,10 @@ export const DSH_Funcionarios = () => {
                     {/* Modal de Remoção */}
                     <Modal show={showRemoveModal} onHide={handleCloseRemoveModal}>
                         <Modal.Header closeButton>
-                            <Modal.Title>Remover Funcionário</Modal.Title>
+                            <Modal.Title>Remover Usuário</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                            Tem certeza de que deseja remover {selectedEmployee?.nome}?
+                            Você tem certeza que deseja remover o usuário {selectedUser?.nome}?
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="secondary" onClick={handleCloseRemoveModal}>
