@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button, Card } from 'react-bootstrap';
 import Sidebar from './Sidebar'; 
+import axios from 'axios';
 import './Style/DSH_Produto.css'; 
-
 
 export const DSH_Produto = () => {
     const [showEditModal, setShowEditModal] = useState(false);
@@ -11,96 +11,40 @@ export const DSH_Produto = () => {
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [newProductData, setNewProductData] = useState({
         nome: '',
-        categoria: '',
-        preco: '',
-        unidade: '',
+        tipo: '',
+        precoAtual: '',
         descricao: '',
-        validade: ''
+        validade: '',
+        img: null // Para armazenar o arquivo da imagem
     });
+    console.log(localStorage.getItem('token'));
+    const [products, setProducts] = useState([]);
 
-    const [products, setProducts] = useState([
-        {
-            id: 1,
-            nome: "Arroz",
-            categoria: "Alimentos",
-            preco: 25.99,
-            unidade: "kg",
-            descricao: "Arroz branco tipo 1, pacote de 5 kg.",
-            imgSrc: 'https://compredallas.vteximg.com.br/arquivos/ids/156625-1000-1000/D-1010-Arroz-Branco-Agulhinha-T1-5kg.png?v=638479197530330000'
-          },
-          {
-            id: 2,
-            nome: "Leite",
-            categoria: "Bebidas",
-            preco: 4.50,
-            unidade: "litro",
-            descricao: "Leite integral, caixa de 1 litro.",
-            imgSrc: "https://img.sitemercado.com.br/produtos/9ca95bb38f7c1fbb350fc01ca2734fab1ef613aad8bf5abe1fc2820f6e50480b_full.jpg" ,
-          },
-          {
-            id: 3,
-            nome: "Sabão em Pó",
-            categoria: "Limpeza",
-            preco: 12.99,
-            unidade: "kg",
-            descricao: "Sabão em pó para roupas, pacote de 1 kg.",
-            imgSrc: 'https://www.artlimpbrasil.com.br/pub/media/catalog/product/cache/c97ef9370ab826f1b3d78b7bc1fd0a4e/s/u/surf_lavanda.png'
-          },
-          {
-            id: 4,
-            nome: "Chips",
-            categoria: "Alimentos",
-            preco: 8.99,
-            unidade: "g",
-            descricao: "Salgadinho Elma Chips, pacote de 500 g.",
-            imgSrc: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2zwrbVyLXH1aS6xnQ-6quvDu-X2dVzkCIbw&s'
-          },
-          {
-            id: 5,
-            nome: "Vassoura",
-            categoria: "Limpeza",
-            preco: 8.99,
-            unidade: "kg",
-            descricao: "Vassoura do Harry Potter, peso de 0,300 kg.",
-            imgSrc: 'https://cdn.awsli.com.br/446/446822/produto/44737268/bt1762-omie___max-bt1762-nylon__conv-1000x1000-ri71gxu5e5.jpg'
-          },
-          {
-            id: 6,
-            nome: "Cream Cracker",
-            categoria: "Alimentos",
-            preco: 3.99,
-            unidade: "g",
-            descricao: "Bolacha Cream Cracker, pacote de 30 g.",
-            imgSrc: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_ml80XrvhAbCkHqBV3_1wk8Gk1Z5HvFhAFQ&s'
-          },
-          {
-            id: 7,
-            nome: "Esponja",
-            categoria: "Limpeza",
-            preco: 2.99,
-            unidade: "g",
-            descricao: "Esponja de cozinha Scoth Brite, pacote de 10 g.",
-            imgSrc: 'https://www.artlimpbrasil.com.br/pub/media/catalog/product/cache/c97ef9370ab826f1b3d78b7bc1fd0a4e/6/0/60386_c.png'
-          },
-          {
-            id: 8,
-            nome: "Monster",
-            categoria: "Bebidas",
-            preco: 9.99,
-            unidade: "ml",
-            descricao: "Monster Energy, lata de 473 ml.",
-            imgSrc: 'https://www.drogariaminasbrasil.com.br/media/catalog/product/9/1/91792.jpg'
-          }
-        ]);
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await axios.get('http://localhost:3000/api/produtos', {
+                    headers: {
+                        Authorization: `token ${localStorage.getItem('token')}`
+                    }
+                });
+                setProducts(response.data);
+            } catch (error) {
+                console.error("Erro ao buscar produtos:", error);
+            }
+        };
+
+        fetchProducts();
+    }, []);
 
     const handleAdd = () => {
         setNewProductData({
             nome: '',
-            categoria: '',
-            preco: '',
-            unidade: '',
+            tipo: '',
+            precoAtual: '',
             descricao: '',
-            validade: ''
+            validade: '',
+            img: null
         });
         setShowAddModal(true);
     };
@@ -129,28 +73,61 @@ export const DSH_Produto = () => {
         setShowAddModal(false);
     };
 
-    const handleSaveEdit = () => {
-        setProducts((prevProducts) =>
-            prevProducts.map((product) =>
-                product.id === selectedProduct.id ? { ...product, ...selectedProduct } : product
-            )
-        );
-        handleCloseEditModal();
+    const handleSaveEdit = async () => {
+        try {
+            const response = await axios.put(`http://localhost:3000/api/produtos/${selectedProduct._id}`, selectedProduct, {
+                headers: {
+                    Authorization: `Cookie ${localStorage.getItem('token')}`
+                }
+            });
+            setProducts((prevProducts) =>
+                prevProducts.map((product) =>
+                    product._id === response.data._id ? response.data : product
+                )
+            );
+            handleCloseEditModal();
+            window.location.reload();
+        } catch (error) {
+            console.error("Erro ao editar produto:", error);
+        }
     };
 
-    const handleConfirmRemove = () => {
-        setProducts((prevProducts) =>
-            prevProducts.filter((product) => product.id !== selectedProduct.id)
-        );
-        handleCloseRemoveModal();
+    const handleConfirmRemove = async () => {
+        try {
+            await axios.delete(`http://localhost:3000/api/produtos/${selectedProduct._id}`, {
+                headers: {
+                    Authorization: `Cookie ${localStorage.getItem('token')}`
+                }
+            });
+            setProducts((prevProducts) =>
+                prevProducts.filter((product) => product._id !== selectedProduct._id)
+            );
+            handleCloseRemoveModal();
+            window.location.reload();
+        } catch (error) {
+            console.error("Erro ao remover produto:", error);
+        }
     };
 
-    const handleSaveAdd = () => {
-        setProducts((prevProducts) => [
-            ...prevProducts,
-            { ...newProductData, id: prevProducts.length + 1, imgSrc: 'https://via.placeholder.com/150' } 
-        ]);
-        handleCloseAddModal();
+    const handleSaveAdd = async () => {
+        const formData = new FormData();
+        Object.entries(newProductData).forEach(([key, value]) => {
+            formData.append(key, value);
+        });
+
+        try {
+            const response = await axios.post('http://localhost:3000/api/produtos', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    Authorization: `Cookie ${localStorage.getItem('token')}`
+                }
+            });
+            setProducts((prevProducts) => [...prevProducts, response.data]);
+            handleCloseAddModal();
+            window.location.reload();
+        } catch (error) {
+            console.error("Erro ao adicionar produto:", error);
+        }
     };
 
     const handleNewProductChange = (e) => {
@@ -158,6 +135,13 @@ export const DSH_Produto = () => {
         setNewProductData((prevData) => ({
             ...prevData,
             [id]: value
+        }));
+    };
+
+    const handleImageChange = (e) => {
+        setNewProductData((prevData) => ({
+            ...prevData,
+            img: e.target.files[0]
         }));
     };
 
@@ -182,17 +166,16 @@ export const DSH_Produto = () => {
                     </Button>
                     <div className="card-grid">
                         {products.map((product) => (
-                            <Card key={product.id} style={{ width: '18rem' }} className="mb-3">
-                                <Card.Img variant="top" src={product.imgSrc} />
+                            <Card key={product._id} style={{ width: '18rem' }} className="mb-3">
+                                <Card.Img variant="top" src={`data:image/png;base64,${product.img}`}/>
                                 <Card.Body>
                                     <Card.Title>{product.nome}</Card.Title>
                                     <Card.Subtitle className="mb-2 text-muted">
-                                        Categoria: {product.categoria}
+                                        Categoria: {product.tipo}
                                     </Card.Subtitle>
                                     <Card.Text>
-                                        Preço: R${product.preco}<br />
-                                        Unidade: {product.unidade}<br />
-                                        Validade: {product.validade}<br />
+                                        Preço: R${product.precoAtual}<br />
+                                        Validade: {new Date(product.validade).toLocaleDateString()}<br />
                                         Descrição: {product.descricao}
                                     </Card.Text>
                                     <Button variant="warning" onClick={() => handleEdit(product)} className="me-2">
@@ -224,33 +207,23 @@ export const DSH_Produto = () => {
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="categoria" className="form-label">Categoria</label>
+                                    <label htmlFor="tipo" className="form-label">Tipo</label>
                                     <input
                                         type="text"
                                         className="form-control"
-                                        id="categoria"
-                                        value={newProductData.categoria}
+                                        id="tipo"
+                                        value={newProductData.tipo}
                                         onChange={handleNewProductChange}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="preco" className="form-label">Preço</label>
+                                    <label htmlFor="precoAtual" className="form-label">Preço Atual</label>
                                     <input
                                         type="number"
                                         step="0.01"
                                         className="form-control"
-                                        id="preco"
-                                        value={newProductData.preco}
-                                        onChange={handleNewProductChange}
-                                    />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="unidade" className="form-label">Unidade</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        id="unidade"
-                                        value={newProductData.unidade}
+                                        id="precoAtual"
+                                        value={newProductData.precoAtual}
                                         onChange={handleNewProductChange}
                                     />
                                 </div>
@@ -272,6 +245,15 @@ export const DSH_Produto = () => {
                                         id="validade"
                                         value={newProductData.validade}
                                         onChange={handleNewProductChange}
+                                    />
+                                </div>
+                                <div className="mb-3">
+                                    <label htmlFor="img" className="form-label">Imagem</label>
+                                    <input
+                                        type="file"
+                                        className="form-control"
+                                        id="img"
+                                        onChange={handleImageChange}
                                     />
                                 </div>
                             </form>
@@ -304,33 +286,23 @@ export const DSH_Produto = () => {
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="categoria" className="form-label">Categoria</label>
+                                    <label htmlFor="tipo" className="form-label">Tipo</label>
                                     <input
                                         type="text"
                                         className="form-control"
-                                        id="categoria"
-                                        value={selectedProduct?.categoria || ''}
+                                        id="tipo"
+                                        value={selectedProduct?.tipo || ''}
                                         onChange={handleEditProductChange}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="preco" className="form-label">Preço</label>
+                                    <label htmlFor="precoAtual" className="form-label">Preço Atual</label>
                                     <input
                                         type="number"
                                         step="0.01"
                                         className="form-control"
-                                        id="preco"
-                                        value={selectedProduct?.preco || ''}
-                                        onChange={handleEditProductChange}
-                                    />
-                                </div>
-                                <div className="mb-3">
-                                    <label htmlFor="unidade" className="form-label">Unidade</label>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        id="unidade"
-                                        value={selectedProduct?.unidade || ''}
+                                        id="precoAtual"
+                                        value={selectedProduct?.precoAtual || ''}
                                         onChange={handleEditProductChange}
                                     />
                                 </div>
@@ -358,7 +330,7 @@ export const DSH_Produto = () => {
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="secondary" onClick={handleCloseEditModal}>
-                                Fechar
+                                Cancelar
                             </Button>
                             <Button variant="primary" onClick={handleSaveEdit}>
                                 Salvar
@@ -369,7 +341,7 @@ export const DSH_Produto = () => {
                     {/* Modal de Remoção */}
                     <Modal show={showRemoveModal} onHide={handleCloseRemoveModal}>
                         <Modal.Header closeButton>
-                            <Modal.Title>Confirmar Remoção</Modal.Title>
+                            <Modal.Title>Remover Produto</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
                             Tem certeza de que deseja remover o produto "{selectedProduct?.nome}"?
