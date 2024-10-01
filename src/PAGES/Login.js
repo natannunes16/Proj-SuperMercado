@@ -1,18 +1,39 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import './Style/Login.css';
 import './Style/Bootstrap.css';
 
 export const Login = () => {
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
     const { register, handleSubmit, formState: { errors } } = useForm();
-    
-    const onSubmit = (data) => {
-        console.log('Login:', data);
-        navigate('/DSH_Funcionarios'); 
-    };
+    const [errorMessage, setErrorMessage] = useState('');
 
+    const onSubmit = async (data) => {
+        try {
+            const response = await axios.post('http://localhost:3000/api/usuarios/login', {
+                email: data.email,
+                senha: data.password
+            }, {
+                withCredentials: true, // Para enviar cookies (JWT token)
+            });
+    
+            if (response.status === 200) {
+                console.log('Login bem-sucedido', response.data);
+                // Salvar o token no localStorage
+                localStorage.setItem('token', response.data.token);
+                navigate('/DSH_Funcionarios'); // Redirecionar após o login
+            }
+        } catch (error) {
+            if (error.response && error.response.status === 401) {
+                setErrorMessage('E-mail ou senha incorretos');
+            } else {
+                setErrorMessage('Erro ao realizar login. Tente novamente.');
+            }
+        }
+    };
+    
     return (
         <>
             <div className="login-container">
@@ -43,6 +64,7 @@ export const Login = () => {
                             />
                             {errors.password && <p className="error-message">{errors.password.message}</p>}
                         </div>
+                        {errorMessage && <p className="error-message">{errorMessage}</p>}
                         <div className="form-group">
                             <input type="submit" className="mt-5 btnSubmit" value="Login" />
                         </div>
