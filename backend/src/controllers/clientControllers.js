@@ -1,4 +1,13 @@
-const Cliente = require('../models/Cliente');
+const Cliente = require('../models/Client');
+
+exports.getAllClients = async (req, res) => {
+    try {
+        const clientes = await Cliente.find();
+        return res.status(200).json(clientes);
+    } catch (error) {
+        return res.status(500).json({ message: 'Erro ao buscar clientes.', error: error.message });
+    }
+};
 
 exports.applyDiscountToClient = async (req, res) => {
     const { clienteId } = req.params;
