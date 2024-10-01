@@ -4,7 +4,6 @@
     height: 100vh;
 }
 
-
 .col-md-2 {
     background-color: #343a40;
     color: #ffffff;
@@ -28,6 +27,7 @@
 .col.py-3 {
     padding: 20px;
     background-color: #f8f9fa;
+    overflow-x: auto; /* Adicionado para que o conteúdo se ajuste horizontalmente */
 }
 
 h1 {
@@ -39,6 +39,8 @@ h1 {
     font-size: 16px;
     border: 1px solid #dee2e6;
     margin-bottom: 10px;
+    display: flex;
+    flex-direction: column; /* Altera o layout para colunar em telas menores */
 }
 
 .list-group-item:hover {
@@ -134,4 +136,40 @@ h1 {
 .form-control:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+}
+
+/* Media Queries para ajuste de layout em diferentes tamanhos de tela */
+
+@media (min-width: 768px) {
+    .list-group-item {
+        flex-direction: row; /* Layout em linha para telas maiores */
+        justify-content: space-between;
+    }
+}
+
+@media (max-width: 767px) {
+    .col-md-2 {
+        height: auto; /* Deixa a barra lateral ajustável em telas menores */
+        padding: 10px;
+    }
+
+    .col.py-3 {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    .list-group-item {
+        font-size: 14px;
+    }
+
+    .list-group-item div {
+        margin-top: 10px; /* Dá espaçamento extra entre os elementos */
+    }
+
+    .btn {
+        width: 100%; /* Botão ocupa a largura total em telas pequenas */
+    }
 }

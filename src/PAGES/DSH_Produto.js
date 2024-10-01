@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Button, Card } from 'react-bootstrap';
-import Sidebar from './Sidebar'; 
+import Sidebar from './Sidebar';
 import axios from 'axios';
-import './Style/DSH_Produto.css'; 
+import './Style/DSH_Produto.css';
 
+const token = localStorage.getItem('token');
 export const DSH_Produto = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showRemoveModal, setShowRemoveModal] = useState(false);
@@ -15,9 +16,9 @@ export const DSH_Produto = () => {
         precoAtual: '',
         descricao: '',
         validade: '',
-        img: null // Para armazenar o arquivo da imagem
+        img: null 
     });
-    console.log(localStorage.getItem('token'));
+    console.log(token);
     const [products, setProducts] = useState([]);
 
     useEffect(() => {
@@ -25,7 +26,7 @@ export const DSH_Produto = () => {
             try {
                 const response = await axios.get('http://localhost:3000/api/produtos', {
                     headers: {
-                        Authorization: `token ${localStorage.getItem('token')}`
+                        Authorization: `token ${token}`
                     }
                 });
                 setProducts(response.data);
@@ -77,7 +78,7 @@ export const DSH_Produto = () => {
         try {
             const response = await axios.put(`http://localhost:3000/api/produtos/${selectedProduct._id}`, selectedProduct, {
                 headers: {
-                    Authorization: `Cookie ${localStorage.getItem('token')}`
+                    Authorization: `Bearer ${token}`
                 }
             });
             setProducts((prevProducts) =>
@@ -96,7 +97,7 @@ export const DSH_Produto = () => {
         try {
             await axios.delete(`http://localhost:3000/api/produtos/${selectedProduct._id}`, {
                 headers: {
-                    Authorization: `Cookie ${localStorage.getItem('token')}`
+                    Authorization: `Cookie ${token}`
                 }
             });
             setProducts((prevProducts) =>
@@ -119,7 +120,7 @@ export const DSH_Produto = () => {
             const response = await axios.post('http://localhost:3000/api/produtos', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
-                    Authorization: `Cookie ${localStorage.getItem('token')}`
+                    Authorization: `token ${token}`
                 }
             });
             setProducts((prevProducts) => [...prevProducts, response.data]);
@@ -152,6 +153,16 @@ export const DSH_Produto = () => {
             [id]: value
         }));
     };
+    const handleImageUpload = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setSelectedProduct({ ...selectedProduct, img: reader.result.split(',')[1] }); 
+            };
+            reader.readAsDataURL(file); 
+        }
+    };
 
     return (
         <div className="container-fluid">
@@ -162,27 +173,29 @@ export const DSH_Produto = () => {
                 <div className="col py-3">
                     <h1>Produtos</h1>
                     <Button variant="primary" className="mb-3" onClick={handleAdd}>
-                        Adicionar Produto
+                    <i class="bi bi-bag-plus-fill"></i>
                     </Button>
                     <div className="card-grid">
                         {products.map((product) => (
                             <Card key={product._id} style={{ width: '18rem' }} className="mb-3">
-                                <Card.Img variant="top" src={`data:image/png;base64,${product.img}`}/>
+                                <Card.Img variant="top" src={`data:image/png;base64,${product.img}`} />
                                 <Card.Body>
                                     <Card.Title>{product.nome}</Card.Title>
                                     <Card.Subtitle className="mb-2 text-muted">
                                         Categoria: {product.tipo}
                                     </Card.Subtitle>
                                     <Card.Text>
+                                        ID: {product._id}<br />
                                         Preço: R${product.precoAtual}<br />
+                                        Preço com desconto: R${product.precoPromocional}<br />
                                         Validade: {new Date(product.validade).toLocaleDateString()}<br />
                                         Descrição: {product.descricao}
                                     </Card.Text>
                                     <Button variant="warning" onClick={() => handleEdit(product)} className="me-2">
-                                        Editar
+                                    <i class="bi bi-pencil-square"></i>
                                     </Button>
                                     <Button variant="danger" onClick={() => handleRemove(product)}>
-                                        Remover
+                                    <i class="bi bi-trash-fill"></i>
                                     </Button>
                                 </Card.Body>
                             </Card>

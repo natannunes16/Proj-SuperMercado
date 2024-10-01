@@ -16,13 +16,14 @@ export const Login = () => {
                 email: data.email,
                 senha: data.password
             }, {
-                withCredentials: true, // Para enviar cookies (JWT token)
+                withCredentials: true, 
             });
     
             if (response.status === 200) {
                 console.log('Login bem-sucedido', response.data);
-                // Salvar o token no localStorage
+                // Salvar o token e o email no localStorage
                 localStorage.setItem('token', response.data.token);
+                localStorage.setItem('email', data.email); 
                 navigate('/DSH_Funcionarios'); // Redirecionar após o login
             }
         } catch (error) {
@@ -46,7 +47,7 @@ export const Login = () => {
                                 className="form-control"
                                 placeholder="Seu Email:"
                                 {...register('email', {
-                                    required: 'Campo obrigatório.', 
+                                    required: 'E-mail obrigatório.', 
                                     pattern: {
                                         value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
                                         message: 'Formato de e-mail inválido.'
@@ -68,9 +69,7 @@ export const Login = () => {
                         <div className="form-group">
                             <input type="submit" className="mt-5 btnSubmit" value="Login" />
                         </div>
-                        <div className="form-group">
-                            <a href="#" className="ForgetPwd">Esqueceu a Senha?</a>
-                        </div>
+                        
                     </form>
                 </div>
             </div>

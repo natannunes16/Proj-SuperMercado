@@ -9,7 +9,6 @@ export const DSH_Cliente = () => {
     const [clients, setClients] = useState([]);
     const [showRemoveModal, setShowRemoveModal] = useState(false);
 
-    // Função para buscar clientes do servidor
     useEffect(() => {
         const fetchClients = async () => {
             try {
@@ -23,7 +22,6 @@ export const DSH_Cliente = () => {
         fetchClients();
     }, []);
 
-    // Função para adicionar desconto ao cliente
     const handleAddDiscount = (client) => {
         setSelectedClient(client);
         setShowRemoveModal(true);
@@ -33,13 +31,8 @@ export const DSH_Cliente = () => {
         if (selectedClient) {
             try {
                 await axios.get(`http://localhost:3000/api/clientes/${selectedClient._id}/desconto`);
-                // Aqui, você pode atualizar a lista de clientes após adicionar o desconto, se necessário
-                setClients((prevClients) =>
-                    prevClients.map((client) =>
-                        client._id === selectedClient._id ? { ...client, descontoCliente: selectedClient.descontoCliente + 5 } : client // Exemplo de atualização do desconto
-                    )
-                );
                 handleCloseRemoveModal();
+                window.location.reload();
             } catch (error) {
                 console.error("Erro ao adicionar desconto:", error);
             }
@@ -62,13 +55,14 @@ export const DSH_Cliente = () => {
                     <ul className="list-group">
                         {clients.map((client) => (
                             <li key={client._id} className="list-group-item d-flex justify-content-between align-items-center">
-                                ID: {client._id} | {client.nome} | CPF: {client.cpf} | Idade: {client.idade} | Tempo de Cliente: {client.tempoCliente} | Desconto: {client.descontoCliente}%
+                                 | {client.nome} | CPF: {client.cpf} | Idade: {client.idade} | Tempo de Cliente: {client.tempoCliente} | Número de compras: {client.numeroCompras}| Desconto: {client.descontoCliente}% 
                                 <div>
                                     <button
                                         className="btn btn-success btn-sm"
                                         onClick={() => handleAddDiscount(client)}
                                     >
                                         Adicionar Desconto
+                                        <i className="bi bi-cash-stack" style={{ fontSize: '1.5em' }}></i>
                                     </button>
                                 </div>
                             </li>
@@ -77,7 +71,7 @@ export const DSH_Cliente = () => {
                 </div>
             </div>
 
-            {/* Modal para confirmar adição de desconto ao cliente */}
+            {/* Confirmar adição de desconto ao cliente */}
             <Modal show={showRemoveModal} onHide={handleCloseRemoveModal}>
                 <Modal.Header closeButton>
                     <Modal.Title>Confirmar Adição de Desconto</Modal.Title>

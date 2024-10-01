@@ -7,7 +7,7 @@
 }
 
 .login-box {
-    background: #0723f6;
+    background: #051cc4;
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -37,9 +37,9 @@
 }
 
 .form-control:focus {
-    border-color: #007bff;
+    border-color: #0614b4;
     outline: none;
-    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(7, 120, 241, 0.25);
 }
 
 .mt-2 {
@@ -51,7 +51,7 @@
 }
 
 .btnSubmit {
-    background-color: #090ea3;
+    background-color: #090eb3;
     color: #fff;
     border: none;
     padding: 0.75rem;
@@ -62,11 +62,11 @@
 }
 
 .btnSubmit:hover {
-    background-color: #0056b3;
+    background-color: #0a69cd;
 }
 
 .error-message {
-    color: #dc3545;
+    color: #ffffff;
     font-size: 0.875rem;
     margin-top: 0.25rem;
 }

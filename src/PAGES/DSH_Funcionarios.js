@@ -2,7 +2,12 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './Sidebar';
 import { Modal, Button } from 'react-bootstrap';
 import axios from 'axios';
-import './Style/DSH_Funcionarios.css'; // Atualize o nome do arquivo CSS se necessário
+import './Style/DSH_Funcionarios.css'; 
+
+
+
+const token = localStorage.getItem('token');
+
 
 export const DSH_Funcionarios = () => {
     const [showEditModal, setShowEditModal] = useState(false);
@@ -24,7 +29,6 @@ export const DSH_Funcionarios = () => {
     });
 
     const [users, setUsers] = useState([]);
-    const token = localStorage.getItem('token'); // Supondo que você armazena o token no localStorage
 
     useEffect(() => {
         fetchUsers();
@@ -34,8 +38,8 @@ export const DSH_Funcionarios = () => {
         try {
             const response = await axios.get('http://localhost:3000/api/usuarios', {
                 headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                    Authorization: `token ${token}`
+                }  
             });
             setUsers(response.data);
         } catch (error) {
@@ -102,11 +106,9 @@ export const DSH_Funcionarios = () => {
     const handleSaveEdit = async () => {
         try {
             await axios.put(`http://localhost:3000/api/usuarios/${selectedUser._id}`, editData, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                
             });
-            fetchUsers(); // Atualiza a lista de usuários
+            fetchUsers(); 
             handleCloseEditModal();
         } catch (error) {
             console.error('Erro ao atualizar usuário:', error);
@@ -116,11 +118,9 @@ export const DSH_Funcionarios = () => {
     const handleConfirmRemove = async () => {
         try {
             await axios.delete(`http://localhost:3000/api/usuarios/${selectedUser._id}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+               
             });
-            fetchUsers(); // Atualiza a lista de usuários
+            fetchUsers(); 
             handleCloseRemoveModal();
         } catch (error) {
             console.error('Erro ao remover usuário:', error);
@@ -130,11 +130,9 @@ export const DSH_Funcionarios = () => {
     const handleSaveNewUser = async () => {
         try {
             await axios.post('http://localhost:3000/api/usuarios/register', newUserData, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+                
             });
-            fetchUsers(); // Atualiza a lista de usuários
+            fetchUsers(); 
             handleCloseAddModal();
         } catch (error) {
             console.error('Erro ao adicionar usuário:', error);
@@ -150,7 +148,8 @@ export const DSH_Funcionarios = () => {
                 <div className="col py-3">
                     <h1>Usuários</h1>
                     <Button variant="primary" onClick={handleAdd} className="mb-3">
-                        Adicionar Usuário
+                         
+                    <i class="bi bi-person-plus-fill" style={{ fontSize: '1.5em' }}></i>
                     </Button>
                     <ul className="list-group">
                         {users.map((user) => (
@@ -161,13 +160,13 @@ export const DSH_Funcionarios = () => {
                                         className="btn btn-warning btn-sm me-2"
                                         onClick={() => handleEdit(user)}
                                     >
-                                        Atualizar
+                                        <i class="bi bi-pencil-square" style={{ fontSize: '1.5em' }}></i>
                                     </button>
                                     <button
                                         className="btn btn-danger btn-sm"
                                         onClick={() => handleRemove(user)}
                                     >
-                                        Remover
+                                        <i class="bi bi-trash-fill" style={{ fontSize: '1.5em' }}></i>
                                     </button>
                                 </div>
                             </li>
