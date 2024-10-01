@@ -1,104 +1,51 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal, Button } from 'react-bootstrap';
 import Sidebar from './Sidebar';
+import axios from 'axios';
 
 export const DSH_Promo = () => {
     const [showEditModal, setShowEditModal] = useState(false);
     const [showRemoveModal, setShowRemoveModal] = useState(false);
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedPromo, setSelectedPromo] = useState(null);
-    const [promotions, setPromotions] = useState([
-        {
-            id: 1,
-            produto_id: 1,
-            nome_produto: 'Arroz',
-            descricao: 'Desconto especial no pacote de 5 kg de arroz branco.',
-            desconto_percentual: 10,
-            data_inicio: '2024-08-01',
-            data_fim: '2024-08-31'
-        },
-        {
-            id: 2,
-            produto_id: 2,
-            nome_produto: 'Leite',
-            descricao: 'Leve 4 e pague 3 no leite integral.',
-            desconto_percentual: 25,
-            data_inicio: '2024-08-15',
-            data_fim: '2024-09-15'
-        },
-        {
-            id: 3,
-            produto_id: 3,
-            nome_produto: 'Sabão em Pó',
-            descricao: 'Sabão em pó com 15% de desconto para compras acima de 3 unidades.',
-            desconto_percentual: 15,
-            data_inicio: '2024-08-10',
-            data_fim: '2024-08-20'
-        },
-        {
-            id: 4,
-            produto_id: 4,
-            nome_produto: 'Chips',
-            descricao: 'Leve 2 e pague 1 na batatinha.',
-            desconto_percentual: 10,
-            data_inicio: '2024-08-15',
-            data_fim: '2024-09-15'
-        },
-        {
-            id: 5,
-            produto_id: 5,
-            nome_produto: 'Vassoura',
-            descricao: 'Leve 3 e pague 2 na vassoura.',
-            desconto_percentual: 25,
-            data_inicio: '2024-08-15',
-            data_fim: '2024-09-15'
-        },
-        {
-            id: 6,
-            produto_id: 6,
-            nome_produto: 'Cream Cracker',
-            descricao: 'Leve 4 e pague 3 na bolacha.',
-            desconto_percentual: 15,
-            data_inicio: '2024-08-15',
-            data_fim: '2024-09-15'
-        },
-        {
-            id: 7,
-            produto_id: 7,
-            nome_produto: 'Esponja',
-            descricao: 'Leve 6 e pague 3 na esponja.',
-            desconto_percentual: 25,
-            data_inicio: '2024-08-15',
-            data_fim: '2024-09-15'
-        },
-        {
-            id: 8,
-            produto_id: 8,
-            nome_produto: 'Monster',
-            descricao: 'Leve 2 e pague 1 no Monster Energy.',
-            desconto_percentual: 50,
-            data_inicio: '2024-08-15',
-            data_fim: '2024-09-15'
-        }
-    ]);
-
+    const [promotions, setPromotions] = useState([]);
+    
     const [newPromoData, setNewPromoData] = useState({
-        produto_id: '',
+        produtoId: '',
         nome_produto: '',
         descricao: '',
-        desconto_percentual: '',
-        data_inicio: '',
-        data_fim: ''
+        descontoPercentual: '',
+        dataInicio: '',
+        dataFim: ''
     });
+
+    const token = localStorage.getItem('token'); // Supondo que você armazena o token no localStorage
+
+    useEffect(() => {
+        fetchPromotions();
+    }, []);
+
+    const fetchPromotions = async () => {
+        try {
+            const response = await axios.get('http://localhost:3000/api/promocoes', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            setPromotions(response.data);
+        } catch (error) {
+            console.error('Erro ao buscar promoções:', error);
+        }
+    };
 
     const handleAdd = () => {
         setNewPromoData({
-            produto_id: '',
+            produtoId: '',
             nome_produto: '',
             descricao: '',
-            desconto_percentual: '',
-            data_inicio: '',
-            data_fim: ''
+            descontoPercentual: '',
+            dataInicio: '',
+            dataFim: ''
         });
         setShowAddModal(true);
     };
@@ -127,28 +74,46 @@ export const DSH_Promo = () => {
         setShowAddModal(false);
     };
 
-    const handleSaveEdit = () => {
-        setPromotions((prevPromotions) =>
-            prevPromotions.map((promo) =>
-                promo.id === selectedPromo.id ? { ...promo, ...selectedPromo } : promo
-            )
-        );
-        handleCloseEditModal();
+    const handleSaveEdit = async () => {
+        try {
+            await axios.put(`http://localhost:3000/api/promocoes/${selectedPromo._id}`, selectedPromo, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            fetchPromotions(); // Atualiza a lista de promoções após a edição
+            handleCloseEditModal();
+        } catch (error) {
+            console.error('Erro ao editar promoção:', error);
+        }
     };
 
-    const handleConfirmRemove = () => {
-        setPromotions((prevPromotions) =>
-            prevPromotions.filter((promo) => promo.id !== selectedPromo.id)
-        );
-        handleCloseRemoveModal();
+    const handleConfirmRemove = async () => {
+        try {
+            await axios.delete(`http://localhost:3000/api/promocoes/${selectedPromo._id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            fetchPromotions(); // Atualiza a lista de promoções após a remoção
+            handleCloseRemoveModal();
+        } catch (error) {
+            console.error('Erro ao remover promoção:', error);
+        }
     };
 
-    const handleSaveAdd = () => {
-        setPromotions((prevPromotions) => [
-            ...prevPromotions,
-            { ...newPromoData, id: prevPromotions.length + 1 }
-        ]);
-        handleCloseAddModal();
+    const handleSaveAdd = async () => {
+        try {
+            await axios.post('http://localhost:3000/api/promocoes', newPromoData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            fetchPromotions(); // Atualiza a lista de promoções após a adição
+            handleCloseAddModal();
+        } catch (error) {
+            console.error('Erro ao adicionar promoção:', error);
+        }
     };
 
     const handleNewPromoChange = (e) => {
@@ -179,26 +144,26 @@ export const DSH_Promo = () => {
                         Adicionar Promoção
                     </Button>
                     <ul className="list-group">
-                        {promotions.map((promo) => (
-                            <li key={promo.id} className="list-group-item d-flex justify-content-between align-items-center">
-                                ID:{promo.id} | ID Do Produto: {promo.produto_id} | Nome da Promoção: {promo.nome_produto} | Desconto Percentual: {promo.desconto_percentual}% | Data Início: {promo.data_inicio} | Data Fim: {promo.data_fim}
-                                <div>
-                                    <button
-                                        className="btn btn-warning btn-sm me-2"
-                                        onClick={() => handleEdit(promo)}
-                                    >
-                                        Editar
-                                    </button>
-                                    <button
-                                        className="btn btn-danger btn-sm"
-                                        onClick={() => handleRemove(promo)}
-                                    >
-                                        Remover
-                                    </button>
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+    {promotions.map((promo) => (
+        <li key={promo._id} className="list-group-item d-flex justify-content-between align-items-center">
+            ID: {promo._id} | Nome da Promoção: {promo.produtoId.nome} | Desconto Percentual: {promo.descontoPercentual}% | Data Início: {promo.dataInicio} | Data Fim: {promo.dataFim}
+            <div>
+                <button
+                    className="btn btn-warning btn-sm me-2"
+                    onClick={() => handleEdit(promo)}
+                >
+                    Editar
+                </button>
+                <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => handleRemove(promo)}
+                >
+                    Remover
+                </button>
+            </div>
+        </li>
+    ))}
+</ul>
 
                     {/* Modal de Adição */}
                     <Modal show={showAddModal} onHide={handleCloseAddModal}>
@@ -208,12 +173,12 @@ export const DSH_Promo = () => {
                         <Modal.Body>
                             <form>
                                 <div className="mb-3">
-                                    <label htmlFor="produto_id" className="form-label">ID do Produto</label>
+                                    <label htmlFor="produtoId" className="form-label">ID do Produto</label>
                                     <input
                                         type="number"
                                         className="form-control"
-                                        id="produto_id"
-                                        value={newPromoData.produto_id}
+                                        id="produtoId"
+                                        value={newPromoData.produtoId}
                                         onChange={handleNewPromoChange}
                                     />
                                 </div>
@@ -238,33 +203,33 @@ export const DSH_Promo = () => {
                                     ></textarea>
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="desconto_percentual" className="form-label">Desconto Percentual</label>
+                                    <label htmlFor="descontoPercentual" className="form-label">Desconto Percentual</label>
                                     <input
                                         type="number"
                                         step="0.01"
                                         className="form-control"
-                                        id="desconto_percentual"
-                                        value={newPromoData.desconto_percentual}
+                                        id="descontoPercentual"
+                                        value={newPromoData.descontoPercentual}
                                         onChange={handleNewPromoChange}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="data_inicio" className="form-label">Data de Início</label>
+                                    <label htmlFor="dataInicio" className="form-label">Data de Início</label>
                                     <input
                                         type="date"
                                         className="form-control"
-                                        id="data_inicio"
-                                        value={newPromoData.data_inicio}
+                                        id="dataInicio"
+                                        value={newPromoData.dataInicio}
                                         onChange={handleNewPromoChange}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="data_fim" className="form-label">Data de Fim</label>
+                                    <label htmlFor="dataFim" className="form-label">Data de Fim</label>
                                     <input
                                         type="date"
                                         className="form-control"
-                                        id="data_fim"
-                                        value={newPromoData.data_fim}
+                                        id="dataFim"
+                                        value={newPromoData.dataFim}
                                         onChange={handleNewPromoChange}
                                     />
                                 </div>
@@ -288,12 +253,12 @@ export const DSH_Promo = () => {
                         <Modal.Body>
                             <form>
                                 <div className="mb-3">
-                                    <label htmlFor="produto_id" className="form-label">ID do Produto</label>
+                                    <label htmlFor="produtoId" className="form-label">ID do Produto</label>
                                     <input
                                         type="number"
                                         className="form-control"
-                                        id="produto_id"
-                                        value={selectedPromo?.produto_id || ''}
+                                        id="produtoId"
+                                        value={selectedPromo?.produtoId || ''}
                                         onChange={handleEditPromoChange}
                                     />
                                 </div>
@@ -318,33 +283,33 @@ export const DSH_Promo = () => {
                                     ></textarea>
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="desconto_percentual" className="form-label">Desconto Percentual</label>
+                                    <label htmlFor="descontoPercentual" className="form-label">Desconto Percentual</label>
                                     <input
                                         type="number"
                                         step="0.01"
                                         className="form-control"
-                                        id="desconto_percentual"
-                                        value={selectedPromo?.desconto_percentual || ''}
+                                        id="descontoPercentual"
+                                        value={selectedPromo?.descontoPercentual || ''}
                                         onChange={handleEditPromoChange}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="data_inicio" className="form-label">Data de Início</label>
+                                    <label htmlFor="dataInicio" className="form-label">Data de Início</label>
                                     <input
                                         type="date"
                                         className="form-control"
-                                        id="data_inicio"
-                                        value={selectedPromo?.data_inicio || ''}
+                                        id="dataInicio"
+                                        value={selectedPromo?.dataInicio || ''}
                                         onChange={handleEditPromoChange}
                                     />
                                 </div>
                                 <div className="mb-3">
-                                    <label htmlFor="data_fim" className="form-label">Data de Fim</label>
+                                    <label htmlFor="dataFim" className="form-label">Data de Fim</label>
                                     <input
                                         type="date"
                                         className="form-control"
-                                        id="data_fim"
-                                        value={selectedPromo?.data_fim || ''}
+                                        id="dataFim"
+                                        value={selectedPromo?.dataFim || ''}
                                         onChange={handleEditPromoChange}
                                     />
                                 </div>
@@ -363,10 +328,10 @@ export const DSH_Promo = () => {
                     {/* Modal de Remoção */}
                     <Modal show={showRemoveModal} onHide={handleCloseRemoveModal}>
                         <Modal.Header closeButton>
-                            <Modal.Title>Confirmar Remoção</Modal.Title>
+                            <Modal.Title>Remover Promoção</Modal.Title>
                         </Modal.Header>
                         <Modal.Body>
-                            Tem certeza de que deseja remover a promoção para o produto "{selectedPromo?.nome_produto}"?
+                            Tem certeza que deseja remover a promoção: {selectedPromo?.nome_produto}?
                         </Modal.Body>
                         <Modal.Footer>
                             <Button variant="secondary" onClick={handleCloseRemoveModal}>
@@ -382,3 +347,5 @@ export const DSH_Promo = () => {
         </div>
     );
 };
+
+export default DSH_Promo;
